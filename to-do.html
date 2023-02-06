@@ -1,0 +1,180 @@
+<html>
+  <head>
+    <style>
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 20px auto;
+        background-color: lightgray;
+        border-radius: 10px;
+        box-shadow: 3px 3px 5px 0px rgba(0, 0, 0, 0.75);
+      }
+      th,
+      td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: center;
+        cursor: pointer;
+        border-radius: 5px;
+      }
+      th {
+        background-color: #f2f2f2;
+      }
+      textarea {
+        width: 100%;
+        height: 80px;
+        margin-top: 20px;
+        padding: 10px;
+        font-size: 16px;
+        border-radius: 10px;
+        box-shadow: 3px 3px 5px 0px rgba(0, 0, 0, 0.75);
+      }
+      #save-note {
+        background-color: green;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        margin-top: 20px;
+      }
+      select {
+        margin: 20px 0;
+        padding: 10px;
+        font-size: 16px;
+        border-radius: 5px;
+        box-shadow: 3px 3px 5px 0px rgba(0, 0, 0, 0.75);
+      }
+    </style>
+  </head>
+  <body>
+    <select id="month-select">
+      <option value="0">Janeiro</option>
+      <option value="1">Fevereiro</option>
+      <option value="2">Março</option>
+      <option value="3">Abril</option>
+      <option value="4">Maio</option>
+      <option value="5">Junho</option>
+      <option value="6">Julho</option>
+      <option value="7">Agosto</option>
+      <option value="8">Setembro</option>
+      <option value="9">Outubro</option>
+      <option value="10">Novembro</option>
+      <option value="11">Dezembro</option>
+    </select>
+    <select id="year-select"></select>
+    <table id="calendar"></table>
+    <textarea id="note-textarea"></textarea>
+    <button id="save-note">Salvar anotação</button>
+
+    <script>
+      const months = [
+        "Janeiro",
+        "Fevereiro",
+        "Março",
+        "Abril",
+        "Maio",
+        "Junho",
+        "Julho",
+        "Agosto",
+        "Setembro",
+        "Outubro",
+        "Novembro",
+        "Dezembro",
+      ];
+      const calendar = document.getElementById("calendar");
+      const noteTextarea = document.getElementById("note-textarea");
+      const saveNoteButton = document.getElementById("save-note");
+      const monthSelect = document.getElementById("month-select");
+      const yearSelect = document.getElementById("year-select");
+      let selectedDate;
+
+      // Cria as opções de ano no select de ano
+      for (
+        let i = new Date().getFullYear();
+        i < new Date().getFullYear() + 10;
+        i++
+      ) {
+        const option = document.createElement("option");
+        option.value = i;
+        option.innerHTML = i;
+        yearSelect.appendChild(option);
+      }
+
+      // Renderiza o calendário com base no mês e ano selecionados
+      function renderCalendar() {
+        calendar.innerHTML = "";
+        const date = new Date(yearSelect.value, monthSelect.value);
+        const month = date.getMonth();
+        const year = date.getFullYear();
+        const firstDay = new Date(year, month, 1);
+        const lastDay = new Date(year, month + 1, 0);
+        const numDays = lastDay.getDate();
+        const table = document.createElement("table");
+
+        // Adiciona o nome do mês e ano na tabela
+        const headerRow = document.createElement("tr");
+        const monthHeader = document.createElement("th");
+        monthHeader.colSpan = 7;
+        monthHeader.innerHTML = months[month] + " " + year;
+        headerRow.appendChild(monthHeader);
+        table.appendChild(headerRow);
+
+        // Adiciona as letras dos dias da semana na tabela
+        const dayNamesRow = document.createElement("tr");
+        const dayNames = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sab"];
+        for (let i = 0; i < 7; i++) {
+          const dayName = document.createElement("td");
+          dayName.innerHTML = dayNames[i];
+          dayNamesRow.appendChild(dayName);
+        }
+        table.appendChild(dayNamesRow);
+
+        // Adiciona as células de dia na tabela
+        let day = 1;
+        let row = document.createElement("tr");
+        for (let i = 0; i < firstDay.getDay(); i++) {
+          const blankCell = document.createElement("td");
+          row.appendChild(blankCell);
+        }
+        for (let i = firstDay.getDay(); day <= numDays; i++) {
+          if (i % 7 == 0) {
+            table.appendChild(row);
+            row = document.createElement("tr");
+          }
+          const dayCell = document.createElement("td");
+          dayCell.innerHTML = day;
+          dayCell.classList.add("day");
+          dayCell.dataset.date = year + "-" + (month + 1) + "-" + day;
+          dayCell.addEventListener("click", function () {
+            selectedDate = this.dataset.date;
+            const notes = localStorage.getItem(selectedDate);
+            if (notes) {
+              noteTextarea.value = notes;
+            } else {
+              noteTextarea.value = "";
+            }
+            noteTextarea.focus();
+          });
+          row.appendChild(dayCell);
+          day++;
+        }
+        table.appendChild(row);
+
+        // Adiciona a tabela ao elemento de calendário
+        calendar.appendChild(table);
+      }
+
+      // Armazena a anotação para a data selecionada
+      function saveNote() {
+        localStorage.setItem(selectedDate, noteTextarea.value);
+      }
+
+      // Inicializa o calendário
+      renderCalendar();
+      monthSelect.addEventListener("change", renderCalendar);
+      yearSelect.addEventListener("change", renderCalendar);
+      saveNoteButton.addEventListener("click", saveNote);
+    </script>
+  </body>
+</html>
